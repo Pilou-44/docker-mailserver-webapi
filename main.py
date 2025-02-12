@@ -7,10 +7,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from routes.email_routes import email_router
+from routes.alias_routes import alias_router
+from routes.quota_routes import quota_router
+from routes.restriction_routes import restriction_router
+from routes.fail2ban_routes import fail2ban_router
 
 WEB_API_KEY = os.getenv("WEB_API_KEY")
-WEB_API_WHITELISTED_IPS = os.getenv("WEB_API_WHITELISTED_IPS", "127.0.0.1").split(',')
-WEB_API_FAIL2BAN_SQLITE_PATH = "/var/lib/fail2ban/fail2ban.sqlite3"
+
 
 origins = [
     "http://localhost",
@@ -27,6 +30,10 @@ app.add_middleware(
 )
 
 app.include_router(email_router)
+app.include_router(alias_router)
+app.include_router(quota_router)
+app.include_router(restriction_router)
+app.include_router(fail2ban_router)
 
 
 @app.get("/", response_model=dict[str, str])

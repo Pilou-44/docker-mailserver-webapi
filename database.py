@@ -27,7 +27,7 @@ class DatabaseService:
             case _:
                 raise ValueError(f"Unsupported DB: {self.database_name}")
 
-    def find(self, split: bool = False):
+    def find(self, split: bool = False) -> list[str] | list[list[str]]:
         """f"""
         filedata = self.database_path.read_bytes().splitlines()
         filedata_without_comment = [x.decode() for x in filedata if not x.startswith(b'#')]
@@ -36,15 +36,14 @@ class DatabaseService:
             return [x.split(delim) for x in filedata_without_comment]
         return filedata_without_comment
 
-    def find_text(self, text: str, split: bool = False, find_in_column: bool = False):
+    def find_text(self, text: str, split: bool = False, find_in_column: bool = False) -> list[str] | list[list[str]]:
         """f"""
         matches = []
         filedata = self.database_path.read_bytes().splitlines()
         filedata_without_comment = [x.decode() for x in filedata if not x.startswith(b'#')]
         for line in filedata_without_comment:
-            print(line)
             if split and find_in_column and text in line.split(self.get_delimiter()):
-                matches.append(line)
+                matches.append(line.split(self.get_delimiter()))
                 continue
             if text in line:
                 matches.append(line)
@@ -62,6 +61,7 @@ class DatabaseService:
         filedata = self.database_path.read_text().splitlines(keepends=True)
         with self.database_path.open(mode="+w") as f:
             for line in filedata:
+                print(line)
                 if line.startswith(text[0] + delim):
                     line = f"{delim}".join(text) + '\n'
                 f.write(line)

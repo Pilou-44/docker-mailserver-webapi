@@ -1,12 +1,7 @@
 .venv/
-.vscode/
-__pycache__/
-
-
-# environment variables
 .env
 .envrc
-.env.production
 
-# macOS-specific files
-.DS_Store
+
+.vscode/
+__pycache__/
