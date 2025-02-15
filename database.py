@@ -10,7 +10,6 @@ class DatabaseService:
         self.database_name = name
         self.database_path = Path(self.config_path) / Path(self.database_name)
         if not self.database_path.exists():
-            print(self.database_path)
             _ = self.database_path.write_bytes(b"")
 
     def get_delimiter(self) -> str:
@@ -33,7 +32,7 @@ class DatabaseService:
         filedata_without_comment = [x.decode() for x in filedata if not x.startswith(b'#')]
         if split:
             delim = self.get_delimiter()
-            return [x.split(delim) for x in filedata_without_comment]
+            return [x.split(delim) for x in filedata_without_comment if x]
         return filedata_without_comment
 
     def find_text(self, text: str, split: bool = False, find_in_column: bool = False) -> list[str] | list[list[str]]:
@@ -61,7 +60,6 @@ class DatabaseService:
         filedata = self.database_path.read_text().splitlines(keepends=True)
         with self.database_path.open(mode="+w") as f:
             for line in filedata:
-                print(line)
                 if line.startswith(text[0] + delim):
                     line = f"{delim}".join(text) + '\n'
                 f.write(line)
