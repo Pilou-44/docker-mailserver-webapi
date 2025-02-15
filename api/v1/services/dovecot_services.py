@@ -1,4 +1,5 @@
 """Dovecot service."""
+import os
 import subprocess
 import crypt
 
@@ -13,7 +14,10 @@ class DovecotService():
 
     def get_quota_used(self, email: str) -> tuple[float, float]:
         """retreive quota with dovecot for a user."""
-        command = f"doveadm quota get -u {email}" + " | tail +2 | awk '{ if ($3 == \"STORAGE\") { print $4\" \"$5\" \"$6 } }'"
+        dockerexec = os.getenv('WEB_API_MAILSERVER_CONTAINER_NAME')
+        if dockerexec:
+            dockerexec += " "
+        command = f"{dockerexec}doveadm quota get -u {email}" + " | tail +2 | awk '{ if ($3 == \"STORAGE\") { print $4\" \"$5\" \"$6 } }'"
         process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         out, _ = process.communicate(command)
         if out:
