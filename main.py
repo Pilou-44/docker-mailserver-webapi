@@ -13,6 +13,7 @@ from routes.quota_routes import quota_router
 from routes.restriction_routes import restriction_router
 
 WEB_API_KEY = os.getenv("WEB_API_KEY")
+LISTEN_PORT = int(os.getenv("WEB_API_LISTEN_PORT", "3000"))
 api_key_header = APIKeyHeader(name="X-API-Key")
 
 
@@ -43,4 +44,4 @@ async def root_api():
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=3000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=LISTEN_PORT, reload=True)
