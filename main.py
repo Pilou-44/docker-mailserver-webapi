@@ -3,37 +3,33 @@
 import os
 
 import uvicorn
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Depends, FastAPI, HTTPException, Security, status
+from fastapi.security import APIKeyHeader
 
-from routes.email_routes import email_router
 from routes.alias_routes import alias_router
+from routes.email_routes import email_router
+from routes.fail2ban_routes import fail2ban_router
 from routes.quota_routes import quota_router
 from routes.restriction_routes import restriction_router
-from routes.fail2ban_routes import fail2ban_router
 
 WEB_API_KEY = os.getenv("WEB_API_KEY")
+api_key_header = APIKeyHeader(name="X-API-Key")
 
 
-origins = [
-    "http://localhost",
-    "http://localhost:3000"
-]
+def get_db(apikey_header: str = Security(api_key_header)):
+    """API Key check."""
+    if WEB_API_KEY and apikey_header == WEB_API_KEY:
+        return True
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing or invalid API key")
+
 
 app = FastAPI(root_path="/api/v1", title="Mailserver API")
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
-app.include_router(email_router)
-app.include_router(alias_router)
-app.include_router(quota_router)
-app.include_router(restriction_router)
-app.include_router(fail2ban_router)
+app.include_router(email_router, dependencies=[Depends(get_db)])
+app.include_router(alias_router, dependencies=[Depends(get_db)])
+app.include_router(quota_router, dependencies=[Depends(get_db)])
+app.include_router(restriction_router, dependencies=[Depends(get_db)])
+app.include_router(fail2ban_router, dependencies=[Depends(get_db)])
 
 
 @app.get("/", response_model=dict[str, str])

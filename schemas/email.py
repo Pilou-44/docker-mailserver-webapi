@@ -1,24 +1,9 @@
 """Models"""
 from pydantic import BaseModel
 
-
-class Alias(BaseModel):
-    """Alias"""
-    email_alias: str
-    email_recipient: str
-
-
-class Quota(BaseModel):
-    """Quota"""
-    quota: float
-    quota_used: float
-    quota_percent: float
-
-
-class Restriction(BaseModel):
-    """Restriction"""
-    send: bool
-    receive: bool
+from schemas.alias import Alias
+from schemas.quota import Quota
+from schemas.restriction import Restriction
 
 
 class Email(BaseModel):

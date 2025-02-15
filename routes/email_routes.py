@@ -1,3 +1,4 @@
+""""Email"""
 from fastapi import APIRouter, status
 from fastapi.exceptions import HTTPException
 from api.v1.services.alias_services import AliasService
@@ -14,6 +15,11 @@ email_router = APIRouter(prefix='/email', tags=['Email'])
 
 @email_router.get("")
 async def get_accounts() -> list[Email]:
+    """Get all users accounts.
+
+    Returns:
+        list[Email]: List of all the users.
+    """
     accounts: list[Email] = []
     db = DatabaseService(DatabaseName.ACCOUNTS.value)
     all_acc = db.find(split=True)
@@ -21,6 +27,10 @@ async def get_accounts() -> list[Email]:
         alias = AliasService().get_alias(user)
         quota = QuotaService().get_quota(user)
         restriction = RestrictionService().get_restriction(user)
+        if alias:
+            alias = [alias]
+        else:
+            alias = []
 
         accounts.append(Email(username=user, password=password, alias=alias, quota=quota, restriction=restriction))
     return accounts
@@ -28,10 +38,25 @@ async def get_accounts() -> list[Email]:
 
 @email_router.get("/{email_id}")
 async def get_account(email_id: str) -> Email:
+    """Get details of an user account.
+
+    Args:
+        email_id (str): User to get info from.
+
+    Raises:
+        HTTPException: Email doesn't exist.
+
+    Returns:
+        Email: The user account info.
+    """
     db = DatabaseService(DatabaseName.ACCOUNTS.value)
     all_acc = db.find(split=True)
     for user, password in all_acc:
         alias = AliasService().get_alias(user)
+        if alias:
+            alias = [alias]
+        else:
+            alias = []
         quota = QuotaService().get_quota(user)
         restriction = RestrictionService().get_restriction(user)
         if user == email_id:
@@ -41,6 +66,17 @@ async def get_account(email_id: str) -> Email:
 
 @email_router.post("")
 async def create_account(user: EmailCreate) -> Email:
+    """Creation of a new user account.
+
+    Args:
+        user (EmailCreate): The account to create.
+
+    Raises:
+        HTTPException: Email already exist.
+
+    Returns:
+        Email: The newly account.
+    """
     db_account = DatabaseService(DatabaseName.ACCOUNTS.value)
     if db_account.find_text(text=user.email):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Mail account {user.email} already exist")
@@ -52,6 +88,17 @@ async def create_account(user: EmailCreate) -> Email:
 
 @email_router.patch("")
 async def update_password(user: EmailCreate) -> Email:
+    """Update password of an email account.
+
+    Args:
+        user (EmailCreate): The User to update.
+
+    Raises:
+        HTTPException: Email doesn't exist.
+
+    Returns:
+        Email: The new Email object.
+    """
     db_account = DatabaseService(DatabaseName.ACCOUNTS.value)
     if not db_account.find_text(text=user.email):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Mail account {user.email} does not exist")
@@ -63,6 +110,14 @@ async def update_password(user: EmailCreate) -> Email:
 
 @email_router.delete("/{email_id}", status_code=204)
 async def delete_account(email_id: str):
+    """Delete an email account.
+
+    Args:
+        email_id (str): The email address.
+
+    Raises:
+        HTTPException: Email doesn't exist.
+    """
     db_account = DatabaseService(DatabaseName.ACCOUNTS.value)
     user = db_account.find_text(text=email_id)
     if not user:
