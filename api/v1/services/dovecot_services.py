@@ -16,7 +16,7 @@ class DovecotService():
         """retreive quota with dovecot for a user."""
         dockerexec = os.getenv('WEB_API_MAILSERVER_CONTAINER_NAME')
         if dockerexec:
-            dockerexec += " "
+            dockerexec = f"docker exec {dockerexec} "
         command = f"{dockerexec}doveadm quota get -u {email}" + " | tail +2 | awk '{ if ($3 == \"STORAGE\") { print $4\" \"$5\" \"$6 } }'"
         process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         out, _ = process.communicate(command)
