@@ -14,7 +14,7 @@ class QuotaService():
         """Get quota of a user."""
         quota = self.db_quota.find_text(text=email, split=True)
         if not quota:
-            return Quota(quota_percent=0.0, quota=0, quota_used=0)
+            quota = [[None, 999999]]
         quotaused, quotapercent = DovecotService().get_quota_used(email)
         return Quota(quota_percent=quotapercent, quota=quota[0][1], quota_used=quotaused)
 

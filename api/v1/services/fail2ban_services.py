@@ -25,7 +25,7 @@ class Fail2banService():
 
     def get_jail(self, name: str | None = None) -> list[Fail2banJail]:
         """Get all jail aor specific by name."""
-        query_where = "WHERE jail = ?" if name else ""
+        query_where = "WHERE jail = ?" if name else " "
         query_select_jail = f"""
             SELECT
                 jail AS name,
