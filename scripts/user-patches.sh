@@ -3,12 +3,12 @@
 # ===============================================================
 # Usage
 # ===============================================================
-# To install the latest docker-mailserver-webapi, you can follow 
+# To install the latest docker-mailserver-webapi, you can follow
 # these instructions :
 #
 # 1. Create new file user-patches.sh in config folder.
 # 2. Add this script inside user-patches.sh.
-#   $ curl -fsSL https://raw.githubusercontent.com/bramanda48/docker-mailserver-webapi/master/scripts/user-patches.sh | bash
+#   $ curl -fsSL https://raw.githubusercontent.com/Pilou-44/docker-mailserver-webapi/master/scripts/user-patches.sh | bash
 # 3. By default, this application will run on port 3000. You need to add the port to docker-compose.yml.
 # 4. Redeploy the container.
 #
@@ -235,10 +235,10 @@ done
 DOWNLOAD_URL=""
 case "$CHANNEL" in
 	stable)
-    DOWNLOAD_URL="https://github.com/bramanda48/docker-mailserver-webapi/releases/latest/download/docker-mailserver-webapi.zip"
+    DOWNLOAD_URL="https://github.com/Pilou-44/docker-mailserver-webapi/releases/latest/download/docker-mailserver-webapi.zip"
 		;;
 	nightly)
-		DOWNLOAD_URL="https://nightly.link/bramanda48/docker-mailserver-webapi/workflows/build-deno/master/docker-mailserver-webapi.zip"
+		DOWNLOAD_URL="https://nightly.link/Pilou-44/docker-mailserver-webapi/workflows/build-deno/master/docker-mailserver-webapi.zip"
 		;;
 	*)
 		_log 'error' "unknown CHANNEL '$CHANNEL': use either stable or nightly."

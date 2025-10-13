@@ -23,8 +23,7 @@ app.use(
   "/api/*",
   demo({ enable: env.DENO_ENV == "demo" }),
   apiKeyAuth({
-    key: env.WEB_API_KEY,
-    whitelist: env.WEB_API_WHITELISTED_IP.split(","),
+    key: env.WEB_API_KEY
   })
 );
 app.use(
@@ -40,7 +39,7 @@ app.use(
 app.get(
   "/",
   swaggerUI({
-    url: "/static/openapi.yaml",
+    url: "/static/openapi.json",
   })
 );
 

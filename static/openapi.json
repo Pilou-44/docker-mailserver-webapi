@@ -1,0 +1,791 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "description": "<strong>docker-mailserver</strong> is a production-ready fullstack but simple mail server (SMTP, IMAP, LDAP, Antispam, Antivirus, etc.) running inside a container. \n\n<strong>docker-mailserver-webapi</strong> is a REST API that helps you efficiently manage your docker-mailserver configuration. It uses the docker-mailserver `setup.sh` as a bridge for managing configurations.\n\nIn order to use this API, you need to add an API key and your IP address to a whitelist of allowed IPs. Create a [*`webapi.env`*](https://github.com/bramanda48/docker-mailserver-webapi/blob/master/.env.example) file with the variables from this [example file](https://github.com/bramanda48/docker-mailserver-webapi/blob/master/.env.example) and bind it to the Docker container under `/tmp/docker-mailserver/webapi/.env`.",
+        "title": "Docker Mailserver - Web API",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "{protocol}://{host}:{port}/{baseUrl}",
+            "description": "",
+            "variables": {
+                "protocol": {
+                    "default": "http",
+                    "enum": [
+                        "http",
+                        "https"
+                    ],
+                    "description": "The protocol used to make requests to the API."
+                },
+                "host": {
+                    "default": "localhost",
+                    "description": "The hostname or IP address of the server."
+                },
+                "port": {
+                    "default": "3000",
+                    "description": "The port number on which the API is listening for requests."
+                },
+                "baseUrl": {
+                    "default": "",
+                    "description": "The base URL path for all API endpoints. This can be used to group related endpoints together under a common path."
+                }
+            }
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "ApiKeyAuth": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "X-API-Key"
+            }
+        },
+        "schemas": {
+            "Email": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "username": {
+                        "type": "string"
+                    }
+                }
+            },
+            "EmailCreate": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "security": [
+        {
+            "ApiKeyAuth": []
+        }
+    ],
+    "tags": [
+        {
+            "name": "DKIM",
+            "description": "Manage DKIM (DomainKeys Identified Mail) Keys"
+        },
+        {
+            "name": "Accounts",
+            "description": "Manage mail accounts."
+        },
+        {
+            "name": "Aliases",
+            "description": "Manage mail account aliases."
+        },
+        {
+            "name": "Quota",
+            "description": "Manage mail account quotas."
+        },
+        {
+            "name": "Dovecot",
+            "description": "Manage the Dovecot master account."
+        },
+        {
+            "name": "Relays",
+            "description": "Manage relay-host services."
+        },
+        {
+            "name": "Fail2Ban",
+            "description": "Manage Fail2Ban IP bans."
+        },
+        {
+            "name": "Logs",
+            "description": "Get logs from various services."
+        }
+    ],
+    "paths": {
+        "/api/v1/config/dkim": {
+            "post": {
+                "tags": [
+                    "DKIM"
+                ],
+                "summary": "Creates DKIM keys and configures them within docker-mailserver.",
+                "operationId": "setup-dkim",
+                "requestBody": {
+                    "description": "<strong>Configuration adjustments :</strong>\n<pre>\nselector  Set a manual selector for the key.\n          Default: mail\ndomain    Provide the domain for which to generate keys for.\n          Default: The FQDN assigned to DMS, excluding any subdomain.\nkeytype   Set the type of key you want to use.\n          Possible values: rsa, ed25519\n          Default: rsa\nkeysize   Set the size of the keys to be generated.\n          Possible values: 1024, 2048 and 4096\n          Default: 2048\n          Only applies when using keytype=rsa\n</pre>\n",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "selector": {
+                                        "type": "string",
+                                        "example": "mail"
+                                    },
+                                    "domain": {
+                                        "type": "string",
+                                        "example": "example.com"
+                                    },
+                                    "keytype": {
+                                        "type": "string",
+                                        "enum": [
+                                            "rsa",
+                                            "ed25519"
+                                        ]
+                                    },
+                                    "keysize": {
+                                        "type": "integer",
+                                        "enum": [
+                                            1024,
+                                            2048,
+                                            4096
+                                        ],
+                                        "default": 2048
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/email": {
+            "get": {
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Get all registered mail accounts.",
+                "operationId": "get-email",
+                "responses": {
+                    "200": {
+                        "description": "Response contains all registered mail accounts.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Email"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Create a new mail account.",
+                "operationId": "add-email",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                    "type": "object",
+                                    "$ref":"#/components/schemas/EmailCreate"
+                                }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Update the password of a mail account.",
+                "operationId": "update-email",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Email"
+                                    }
+                                }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Delete a mail account including associated data (aliases, quotas) and optionally the mailbox storage for that account.",
+                "operationId": "delete-email",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "email",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true,
+                        "description": "Registered mail account."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/email/restrict": {
+            "get": {
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Display restricted mail accounts.",
+                "operationId": "get-email-restrict",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "email",
+                        "schema": {
+                            "type": "string",
+                            "example": "user@example.com"
+                        },
+                        "required": false,
+                        "description": "Registered mail account."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Add a mail account to the restricted list.",
+                "operationId": "add-email-restrict",
+                "requestBody": {
+                    "description": "<strong>Configuration adjustments :</strong>\n<pre>\naccess    The type of access that will be restricted.\n          Possible values: send, receive\n</pre>\n",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "access": {
+                                        "type": "string",
+                                        "enum": [
+                                            "send",
+                                            "receive"
+                                        ]
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "user@example.com"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Accounts"
+                ],
+                "summary": "Remove a mail account from the restricted list.",
+                "operationId": "delete-email-restrict",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "access",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "send",
+                                "receive"
+                            ]
+                        },
+                        "required": true,
+                        "description": "The type of access that will be restricted."
+                    },
+                    {
+                        "in": "query",
+                        "name": "email",
+                        "schema": {
+                            "type": "string",
+                            "example": "user@example.com"
+                        },
+                        "required": true,
+                        "description": "Registered mail account."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/alias": {
+            "post": {
+                "tags": [
+                    "Aliases"
+                ],
+                "summary": "Add an alias for a recipient (a mail account).",
+                "operationId": "add-alias",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "emailAlias": {
+                                        "type": "string",
+                                        "example": "alias@example.com"
+                                    },
+                                    "emailRecipient": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "user@example.com"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Aliases"
+                ],
+                "summary": "Remove a mail account (the recipient) from an existing alias.",
+                "operationId": "delete-alias",
+                "description": "If the alias has no more recipients, the alias will also be removed.",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "emailAlias",
+                        "schema": {
+                            "type": "string",
+                            "example": "alias@example.com"
+                        },
+                        "required": true,
+                        "description": "Mail account alias."
+                    },
+                    {
+                        "in": "query",
+                        "name": "emailRecipient",
+                        "schema": {
+                            "type": "string",
+                            "example": "user@example.com"
+                        },
+                        "required": true,
+                        "description": "Mail account recipient."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/quota": {
+            "patch": {
+                "tags": [
+                    "Quota"
+                ],
+                "summary": "Set a quota (storage limit) for an existing mail account.",
+                "operationId": "update-quota",
+                "requestBody": {
+                    "description": "<strong>Configuration adjustments :</strong>\n<pre>\nquota     The quota value is in bytes. You may use a unit suffix for convenience,\n          such as 10M for 10 MebiBytes (MiB). A value of 0 opts out of enforcing quota.\n</pre>\n",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "user@example.com"
+                                    },
+                                    "quota": {
+                                        "type": "string",
+                                        "example": "100M"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Quota"
+                ],
+                "summary": "Remove any quota set for an existing mail account.",
+                "operationId": "delete-quota",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "email",
+                        "schema": {
+                            "type": "string",
+                            "example": "user@example.com"
+                        },
+                        "required": true,
+                        "description": "Registered mail account."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/dovecot/master": {
+            "get": {
+                "tags": [
+                    "Dovecot"
+                ],
+                "summary": "Get a list of all Dovecot master accounts.",
+                "operationId": "get-dovecot-master",
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Dovecot"
+                ],
+                "summary": "Add a new Dovecot master account (for POP3/IMAP administration).",
+                "operationId": "add-dovecot-master",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "username": {
+                                        "type": "string",
+                                        "example": "dovecotuser"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "12345678"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Dovecot"
+                ],
+                "summary": "Update the password for a Dovecot master account.",
+                "operationId": "update-dovecot-master",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "username": {
+                                        "type": "string",
+                                        "example": "dovecotuser"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "12345678"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Dovecot"
+                ],
+                "summary": "Delete a Dovecot master account.",
+                "operationId": "delete-dovecot-master",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "username",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "example": "dovecotuser"
+                            }
+                        },
+                        "required": true,
+                        "description": "Dovecot master username."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/relay/add-auth": {
+            "post": {
+                "tags": [
+                    "Relays"
+                ],
+                "summary": "Add credentials to authenticate to a relay-host service.",
+                "operationId": "relay-add-auth",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "domain": {
+                                        "type": "string",
+                                        "example": "example.com"
+                                    },
+                                    "username": {
+                                        "type": "string",
+                                        "example": "relayuser"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "12345678"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/relay/add-domain": {
+            "post": {
+                "tags": [
+                    "Relays"
+                ],
+                "summary": "Add a domain to a relay-host service.",
+                "operationId": "relay-add-domain",
+                "description": "Add a relay-host where mail sent from mail accounts of the provided,\ndomain will be relayed through to their destination.\n\nIf a port is not provided it will default to 25.\n\nIf the relay-host requires authentication, use the 'setup relay add-auth'\ncommand after adding the relay-host.\n",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "domain": {
+                                        "type": "string",
+                                        "example": "example.com"
+                                    },
+                                    "host": {
+                                        "type": "string",
+                                        "example": "smtp.relay.com"
+                                    },
+                                    "port": {
+                                        "type": "integer",
+                                        "example": 25
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/relay/exclude-domain": {
+            "post": {
+                "tags": [
+                    "Relays"
+                ],
+                "summary": "Exclude a domain from a relay-host service.",
+                "operationId": "relay-exclude-domain",
+                "description": "When a default relay-host is configured (via ENV), the default behaviour\nis to relay all your mail accounts outgoing mail through that service.\n\nThis command allows to opt-out from that default behaviour by excluding\nall mail accounts belonging to a hosted domain you specify.\n",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "domain": {
+                                        "type": "string",
+                                        "example": "example.com"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/fail2ban": {
+            "get": {
+                "tags": [
+                    "Fail2Ban"
+                ],
+                "summary": "Get all banned IP addresses.",
+                "operationId": "get-fail2ban",
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/fail2ban/ban/{ip}": {
+            "post": {
+                "tags": [
+                    "Fail2Ban"
+                ],
+                "summary": "Add an IP address to the custom jail.",
+                "operationId": "ban-fail2ban",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "ip",
+                        "schema": {
+                            "type": "string",
+                            "example": "127.0.0.1"
+                        },
+                        "required": true,
+                        "description": "IP address"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/fail2ban/unban/{ip}": {
+            "post": {
+                "tags": [
+                    "Fail2Ban"
+                ],
+                "summary": "Unban and IP address.",
+                "operationId": "unban-fail2ban",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "ip",
+                        "schema": {
+                            "type": "string",
+                            "example": "127.0.0.1"
+                        },
+                        "required": true,
+                        "description": "IP address"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/v1/logs/fail2ban": {
+            "get": {
+                "tags": [
+                    "Logs"
+                ],
+                "summary": "Get latest Fail2Ban logs.",
+                "operationId": "get-logs-fail2ban",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "limit",
+                        "schema": {
+                            "type": "integer",
+                            "example": 25
+                        },
+                        "required": false,
+                        "description": "Number of lines displayed (Default: 25)."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        }
+    }
+}

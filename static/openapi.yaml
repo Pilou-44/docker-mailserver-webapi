@@ -1,19 +1,14 @@
 openapi: 3.0.0
 info:
   description: >-
-    <strong>docker-mailserver</strong>, or DMS for short, is a production-ready fullstack but simple mail server 
-    (SMTP, IMAP, LDAP, Anti-spam, Anti-virus, etc.). It employs only configuration files, no SQL database. 
-    The image is focused around the slogan "Keep it simple and versioned".
+    <strong>docker-mailserver</strong> is a production-ready fullstack but simple mail server (SMTP, IMAP, LDAP, Antispam, Antivirus, etc.) running inside a container.
 
 
-    <strong>docker-mailserver-webapi</strong> is a REST API that helps you efficiently 
-    manage your docker-mailserver configuration. 
-    It uses docker-mailserver setup.sh as a bridge for managing configurations.
-    
-    
-    In order to use this API you need a API key and add your IP
-    address to the whitelist of allowed IPs this can be done by add new environment variable
-    <strong>WEB_API_KEY</strong> and <strong>WEB_API_WHITELISTED_IP</strong> in your compose file.
+    <strong>docker-mailserver-webapi</strong> is a REST API that helps you efficiently manage your docker-mailserver configuration. It uses the docker-mailserver `setup.sh` as a bridge for managing configurations.
+
+
+    In order to use this API, you need to add an API key.
+    Create a [*`webapi.env`*](https://github.com/Pilou-44/docker-mailserver-webapi/blob/master/.env.example) file with the variables from this [example file](https://github.com/Pilou-44/docker-mailserver-webapi/blob/master/.env.example) and bind it to the Docker container under `/tmp/docker-mailserver/webapi/.env`.
 
   title: Docker Mailserver - Web API
   version: "1.0.0"
@@ -26,7 +21,6 @@ servers:
         default: http
         enum:
           - http
-          - https
         description: The protocol used to access the server.
       host:
         default: localhost
@@ -47,7 +41,7 @@ components:
 
 security:
   - ApiKeyAuth: []
-  
+
 tags:
   - name: DKIM (DomainKeys Identified Mail)
     description: Manage DKIM Keys
@@ -65,7 +59,7 @@ tags:
     description: Manage netfilter fail2ban.
   - name: Logs
     description: Manage docker mailserver logs.
-  
+
 paths:
   ############################################################################
   # DKIM Manager
@@ -101,7 +95,7 @@ paths:
                 selector:
                   type: string
                   example: "mail"
-                domain: 
+                domain:
                   type: string
                   example: "example.com"
                 keytype:
@@ -119,13 +113,13 @@ paths:
       responses:
         200:
           description: Success
-          
-          
+
+
   ############################################################################
   # Mail Account
   ############################################################################
   /api/v1/email:
-    get: 
+    get:
       tags:
         - Mail Account
       summary: Get all registered mail account.
@@ -133,8 +127,8 @@ paths:
       responses:
         200:
           description: Success
-          
-    post: 
+
+    post:
       tags:
         - Mail Account
       summary: Add a new mail account (email address).
@@ -155,11 +149,11 @@ paths:
       responses:
         200:
           description: Success
-          
-    patch: 
+
+    patch:
       tags:
         - Mail Account
-      summary: Update the password for a mail account. 
+      summary: Update the password for a mail account.
       operationId: update-email
       requestBody:
         required: true
@@ -177,14 +171,14 @@ paths:
       responses:
         200:
           description: Success
-  
-    delete: 
+
+    delete:
       tags:
         - Mail Account
       summary: Delete a mail account, including associated data (aliases, quotas) and
         optionally the mailbox storage for that account.
       operationId: delete-email
-      parameters: 
+      parameters:
         - in: query
           name: email
           schema:
@@ -195,15 +189,15 @@ paths:
       responses:
         200:
           description: Success
-          
-          
+
+
   /api/v1/email/restrict:
-    get: 
+    get:
       tags:
         - Mail Account
       summary: Display restricted mail accounts.
       operationId: get-email-restrict
-      parameters: 
+      parameters:
         - in: query
           name: email
           schema:
@@ -214,8 +208,8 @@ paths:
       responses:
         200:
           description: Success
-          
-    post: 
+
+    post:
       tags:
         - Mail Account
       summary: Add a mail account to restricted list.
@@ -244,13 +238,13 @@ paths:
       responses:
         200:
           description: Success
-          
-    delete: 
+
+    delete:
       tags:
         - Mail Account
       summary: Remove a mail account from the restricted list.
       operationId: delete-email-restrict
-      parameters: 
+      parameters:
         - in: query
           name: access
           schema:
@@ -270,13 +264,13 @@ paths:
       responses:
         200:
           description: Success
-          
-  
+
+
   ############################################################################
   # Alias
   ############################################################################
   /api/v1/alias:
-    post: 
+    post:
       tags:
         - Aliases
       summary: Add an alias for a recipient (a mail account).
@@ -299,14 +293,14 @@ paths:
       responses:
         200:
           description: Success
-          
-    delete: 
+
+    delete:
       tags:
         - Aliases
-      summary: Remove a mail account (the recipient) from an existing alias. 
+      summary: Remove a mail account (the recipient) from an existing alias.
       operationId: delete-alias
       description: "If the alias has no more recipients, the alias will also be removed."
-      parameters: 
+      parameters:
         - in: query
           name: emailAlias
           schema:
@@ -324,16 +318,16 @@ paths:
       responses:
         200:
           description: Success
-          
-          
+
+
   ############################################################################
   # Quota
   ############################################################################
   /api/v1/quota:
-    patch: 
+    patch:
       tags:
         - Quota
-      summary: Set a quota (storage limit) for an existing mail account. 
+      summary: Set a quota (storage limit) for an existing mail account.
       operationId: update-quota
       requestBody:
         description: |
@@ -357,13 +351,13 @@ paths:
       responses:
         200:
           description: Success
-          
-    delete: 
+
+    delete:
       tags:
         - Quota
       summary: Remove any quota set for an existing mail account.
       operationId: delete-quota
-      parameters: 
+      parameters:
         - in: query
           name: email
           schema:
@@ -374,13 +368,13 @@ paths:
       responses:
         200:
           description: Success
-          
-          
+
+
   ############################################################################
   # Dovecot
   ############################################################################
   /api/v1/dovecot/master:
-    get: 
+    get:
       tags:
         - Dovecot
       summary: Get list dovecot-master account.
@@ -388,8 +382,8 @@ paths:
       responses:
         200:
           description: Success
-          
-    post: 
+
+    post:
       tags:
         - Dovecot
       summary: Add a new dovecot-master account (for POP3/IMAP administration).
@@ -410,11 +404,11 @@ paths:
       responses:
         200:
           description: Success
-          
-    patch: 
+
+    patch:
       tags:
         - Dovecot
-      summary: Update the password for a dovecot-master account. 
+      summary: Update the password for a dovecot-master account.
       operationId: update-dovecot-master
       requestBody:
         required: true
@@ -432,13 +426,13 @@ paths:
       responses:
         200:
           description: Success
-          
-    delete: 
+
+    delete:
       tags:
         - Dovecot
       summary: Remove a dovecot-master account.
       operationId: delete-dovecot-master
-      parameters: 
+      parameters:
         - in: query
           name: username
           schema:
@@ -451,17 +445,17 @@ paths:
       responses:
         200:
           description: Success
-          
-          
-  
+
+
+
   ############################################################################
   # Relay
   ############################################################################
   /api/v1/relay/add-auth:
-    post: 
+    post:
       tags:
         - Relay
-      summary: Add credentials to authenticate to a relay-host service. 
+      summary: Add credentials to authenticate to a relay-host service.
       operationId: relay-add-auth
       requestBody:
         required: true
@@ -482,10 +476,10 @@ paths:
       responses:
         200:
           description: Success
-  
-  
+
+
   /api/v1/relay/add-domain:
-    post: 
+    post:
       tags:
         - Relay
       summary: Add domain to relay-host service.
@@ -493,9 +487,9 @@ paths:
       description: |
         Add a relay-host where mail sent from mail accounts of the provided,
         domain will be relayed through to their destination.
-    
+
         If a port is not provided it will default to 25.
-    
+
         If the relay-host requires authentication, use the 'setup relay add-auth'
         command after adding the relay-host.
       requestBody:
@@ -517,18 +511,18 @@ paths:
       responses:
         200:
           description: Success
-          
-  
+
+
   /api/v1/relay/exclude-domain:
-    post: 
+    post:
       tags:
         - Relay
-      summary: Exclude the domain from relay-host service. 
+      summary: Exclude the domain from relay-host service.
       operationId: relay-exclude-domain
       description: |
         When a default relay-host is configured (via ENV), the default behaviour
         is to relay all your mail accounts outgoing mail through that service.
-    
+
         This command allows to opt-out from that default behaviour by excluding
         all mail accounts belonging to a hosted domain you specify.
       requestBody:
@@ -544,13 +538,13 @@ paths:
       responses:
         200:
           description: Success
-  
-  
+
+
   ############################################################################
   # Fail2ban
   ############################################################################
   /api/v1/fail2ban:
-    get: 
+    get:
       tags:
         - Fail2ban
       summary: Get all banned IP Address.
@@ -558,14 +552,14 @@ paths:
       responses:
         200:
           description: Success
-          
+
   /api/v1/fail2ban/ban/{ip}:
-    post: 
+    post:
       tags:
         - Fail2ban
       summary: Add IP Address to the custom jail.
       operationId: ban-fail2ban
-      parameters: 
+      parameters:
         - in: path
           name: ip
           schema:
@@ -576,14 +570,14 @@ paths:
       responses:
         200:
           description: Success
-  
+
   /api/v1/fail2ban/unban/{ip}:
-    post: 
+    post:
       tags:
         - Fail2ban
-      summary: Unban IP Address. 
+      summary: Unban IP Address.
       operationId: unban-fail2ban
-      parameters: 
+      parameters:
         - in: path
           name: ip
           schema:
@@ -600,12 +594,12 @@ paths:
   # Logs
   ############################################################################
   /api/v1/logs/fail2ban:
-    get: 
+    get:
       tags:
         - Logs
       summary: Get latest fail2ban logs.
       operationId: get-logs-fail2ban
-      parameters: 
+      parameters:
         - in: query
           name: limit
           schema:
