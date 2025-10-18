@@ -21,7 +21,7 @@
 | master  | <img src="https://img.shields.io/static/v1?label=&message=Under+Development&color=8B8000&logo=deno" alt="Under Development"> |
 
 ## Deno
-Deno version `2.5.4`
+Deno version `deno 2.2.15`
 
 ## Installation & Usage
 
