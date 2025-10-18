@@ -25,22 +25,28 @@ export class EmailService extends BaseService {
 
     for (const [email, password] of getAccount) {
       const alias = await this.aliasService.getAlias(email);
-      const quota = await this.getQuota(email);
+      const quota = await this.getQuota(email, true);
       const restriction = await this.restrictionService.getRestriction(email);
       account.push(new MailAccount(email, password, alias, quota, restriction));
     }
     return account;
   }
 
-  public async getQuota(email: string): Promise<Quota> {
+  public async getQuota(email: string, withoutQuotaLimit: boolean = false): Promise<Quota> {
     const getQuota: string[] = await this.dbQuota.findText(email, {
       split: true,
     });
-    if (getQuota.length == 0) {
+    if (!withoutQuotaLimit && getQuota.length == 0) {
       return new Quota(0, 0, 0);
     }
 
-    const quota: string = getQuota[0][1];
+    let quota: string = "";
+    if (withoutQuotaLimit) {
+      quota = "10000000";
+    }
+    else {
+      quota = getQuota[0][1];
+    }
     const { $quotaUsed, $quotaUsedPercent } =
       this.dovecotService.getQuotaUsed(email);
 
