@@ -21,7 +21,7 @@
     "status-code": "https://deno.land/x/https_status_codes@v1.2.0/mod.ts",
     "zod": "https://deno.land/x/zod@v3.22.4/mod.ts",
     "readline": "https://deno.land/x/readline@v1.1.0/mod.ts",
-    "sqlite3": "https://deno.land/x/sqlite3@0.11.0/mod.ts"
+    "sqlite3": "https://deno.land/x/sqlite3@0.12.0/mod.ts"
   },
   "scopes": {
     "https://deno.land/x/esbuild_plugin_copy@v1.1.3/": {
