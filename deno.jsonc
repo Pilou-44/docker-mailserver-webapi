@@ -34,8 +34,7 @@
     "strict": true,
     "strictPropertyInitialization": false,
     "strictNullChecks": false,
-    "strictFunctionTypes": false,
-    "removeComments": true
+    "strictFunctionTypes": false
   },
   "lint": {
     "rules": {
