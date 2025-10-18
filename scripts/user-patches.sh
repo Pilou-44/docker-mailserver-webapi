@@ -198,7 +198,7 @@ function do_patch() {
 
 	if [ -z "$(command_exists deno)" ]; then
 		_log "info" "Installing deno ..."
-		curl -fsSL https://deno.land/install.sh | sh
+		curl -fsSL https://deno.land/install.sh | bash -s -- 'v1.45.0'
 
 		_log "info" "Copy /root/.deno/bin/deno to /usr/bin/deno"
 		cp /root/.deno/bin/deno /usr/bin/deno
