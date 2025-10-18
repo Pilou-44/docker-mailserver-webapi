@@ -10,7 +10,7 @@ on:
         required: true
 
 env:
-  DENO_VERSION: "v2.x"
+  DENO_VERSION: "v1.x"
   INPUT_VENDOR_VERSION: ${{ github.event.inputs.vendor_version || '1.0.0' }}
 
 permissions:

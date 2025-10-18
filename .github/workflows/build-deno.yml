@@ -1,7 +1,7 @@
 name: Build Deno
 
 env:
-  DENO_VERSION: "v2.x"
+  DENO_VERSION: "v1.x"
   ARCHIVE_NAME: docker-mailserver-webapi
 
 on:
